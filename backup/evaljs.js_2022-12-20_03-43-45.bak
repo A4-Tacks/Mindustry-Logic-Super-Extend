@@ -1,0 +1,74 @@
+const EvaljsI = {
+	_(builder, text, output, arg) {
+		this.text = builder.var(text);
+		this.output = builder.var(output);
+		this.arg = builder.var(arg);
+
+	},
+
+	run(exec) {
+		f = new Function("arg", exec.obj(this.text));
+	    exec.setobj(this.output, f(exec.obj(this.arg)))
+	}
+};
+
+const EvaljsStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(EvaljsStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.text = words[1] || '"return true"';
+		this.output = words[2] || "result";
+		this.arg = words[3] || '""';
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(EvaljsI));
+		inst._(h, this.text, this.output, this.arg);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = (sep, name) => {
+			table.add(sep);
+			this.field(table, this[name], str => {this[name] = str});
+		};
+		
+		add("run ", "text");
+		add(" return ", "output");
+		add(" = f(", "arg");
+		table.add(")");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("evaljs ");
+
+		b.append(this.text);
+		b.append(" ");
+
+		b.append(this.output);
+		b.append(" ");
+
+		b.append(this.arg);
+	},
+
+	name: () => "EvalJs",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("evaljs", EvaljsStatement, [
+	"evaljs",
+	"",
+	"",
+	""
+]);
+
+module.exports = EvaljsStatement;

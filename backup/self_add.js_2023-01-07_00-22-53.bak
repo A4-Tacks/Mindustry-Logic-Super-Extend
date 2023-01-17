@@ -1,0 +1,70 @@
+const SelfaddI = {
+    _(builder, target, add) {
+        this.target = builder.var(target);
+        this.add = builder.var(add);
+    },
+
+    run(exec) {
+        exec.setnum(this.target, exec.num(this.target) + exec.num(this.add))
+    }
+};
+
+const SelfaddStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(SelfaddStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.output = words[1] || "result";
+        this.text = words[2] || '1';
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(SelfaddI));
+        inst._(h, this.output, this.text, this.a, this.b, this.c);
+        return inst;
+    },
+
+    buildt(table) {
+        var widsum = 0;
+        const add = (sep, name) => {
+            table.add(sep).marginLeft(sep.length).left();
+            this.field(table, this[name], str => {this[name] = str}).left();
+            this.row(table);
+        };
+        add("Add", "output");
+        add("eval", "text");
+        add("a=", "a");
+        add("b=", "b");
+        add("c=", "c");
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("op add ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.add);
+        b.append(" 0");
+    },
+
+    name: () => "SelfAdd",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("selfadd", SelfaddStatement, [
+    "op",
+    "add",
+    "result",
+    "0"
+]);
+
+module.exports = SelfaddStatement;

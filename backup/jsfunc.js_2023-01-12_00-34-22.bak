@@ -1,0 +1,87 @@
+const JsFuncI = {
+    _(builder, fname, text, err) {
+        this.fname = builder.var(fname);
+        this.text = builder.var(text);
+        this.err = builder.var(err);
+    },
+
+    run(exec) {
+        var e, errinfo;
+        
+        var fname = "" + exec.obj(this.fname);
+        var text = "" + exec.obj(this.text);
+        
+        if (!(/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(fname))) {
+            errinfo = "SyntaxError\n不合法的标识符: " + fname + "\n";
+            exec.setobj(this.err, errinfo);
+            return;
+        }
+
+        const ment = (fname, obj) => {
+            eval(fname + " = obj");
+            return;
+        }
+
+    }
+};
+
+const JsFuncStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(JsFuncStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.fname = words[1] || "func";
+        this.text = words[2] || '""';
+        this.err = "err";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(JsFuncI));
+        inst._(h, this.fname, this.text, this.err);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep).marginLeft(sep.length).left();
+            this.row(table);
+            this.field(table, this[name], str => {this[name] = str}).left();
+            this.row(table);
+        };
+        add("function ", "fname");
+        add("(...args) {return eval(", "text");
+        table.add("}").marginLeft(1).left();
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("jsfunc ");
+
+        b.append(this.fname);
+        b.append(" ");
+
+        b.append(this.text);
+        b.append(" ");
+
+        b.append(this.err);
+    },
+
+    name: () => "JsFunc",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("jsfunc", JsFuncStatement, [
+    "jsfunc",
+    "",
+    "",
+    ""
+]);
+
+module.exports = JsFuncStatement;

@@ -1,0 +1,13 @@
+{
+    "name": "super-message",
+    "description": "比普通信息板更强, 可以存储一万行, 1M信息",
+    "health": 800,
+    "category": "logic",
+    "type": "MessageBlock",
+    "size": 1,
+    "requirements": [
+    {"item": "copper", "amount": 1024}
+    ],
+    "maxNewlines": 10000,
+    "maxTextLength": 1048576
+}

@@ -1,0 +1,65 @@
+const EvaljsI = {
+	_(builder, text, output) {
+		this.text = builder.var(text);
+		this.output = builder.var(output);
+
+	},
+
+	run(exec) {
+	    exec.setobj(this.output, exec.obj(this.text));
+	}
+};
+
+const EvaljsStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(EvaljsStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.pid = words[1] || "return true";
+		this.output = words[2] || "result";
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(EvaljsI));
+		inst._(h, this.text, this.output);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = (sep, name) => {
+			table.add(sep);
+			this.field(table, this[name], str => {this[name] = str});
+		};
+		
+		add("run ", "text");
+		add(" return ", "output");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("evaljs ");
+
+		b.append(this.text);
+		b.append(" ");
+
+		b.append(this.output);
+	},
+
+	name: () => "Evaljs",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("evaljs", EvaljsStatement, [
+	"evaljs",
+	"",
+	""
+]);
+
+module.exports = EvaljsStatement;

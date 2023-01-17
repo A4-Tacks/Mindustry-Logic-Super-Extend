@@ -1,0 +1,78 @@
+const LockI = {
+	_(builder, pid, output, target, position) {
+		this.pid = builder.var(pid);
+		this.output = builder.var(output);
+		this.target = builder.var(target);
+		this.position = builder.var(position);
+
+	},
+
+	run(vm) {
+	}
+};
+
+const LockStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(LockStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.pid = words[1];
+		this.output = words[2];
+		this.target = words[3];
+		this.position = words[4];
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(LockI));
+		inst._(h, this.pid, this.output, this.target, this.position);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = name => {
+			table.add(name).left().marginLeft(10);
+			this.field(table, this[name], text => {this[name] = text}).width(150);
+		};
+		
+		add("pid ");
+		add(" :: ");
+		add(" = ");
+		add(" at ");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("lock ");
+
+		b.append(this.pid);
+		b.append(" ");
+
+		b.append(this.output);
+		b.append(" ");
+
+		b.append(this.target);
+		b.append(" ");
+
+		b.append(this.position);
+	},
+
+	name: () => "Lock",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("lock", LockStatement, [
+	"lock",
+	"false",
+	"result",
+	"cell1",
+	"0"
+]);
+
+module.exports = LockStatement;

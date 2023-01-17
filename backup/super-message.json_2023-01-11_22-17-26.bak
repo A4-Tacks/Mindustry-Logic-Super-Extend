@@ -1,0 +1,20 @@
+{
+    "name": "super-message",
+    "description": "比普通信息板更强, 可以存储一万行。\n受限于 mdt 保存的 string 的最长长度, 最多存储 65535 个 Byte。注意是 Byte 而不是一个 Unicode 字符\n参数限制长度为 65535 个字符，但实际并不能存储这么多。因为一个 Unicode 字符可能占用多个字节，字符串本身也会占用一些。\n超出限制会保存错误的。",
+    "size": 1,
+    "health": 800,
+    "type": "MessageBlock",
+    "category": "logic",
+    "research": "message",
+    "requirements": [
+        {"item": "copper", "amount": 128},
+        {"item": "graphite", "amount": 1024}
+    ],
+    "maxNewlines": 10000,
+    "maxTextLength": 65535,
+    "destructible": true,
+    "canPlaceOn": true,
+    "canOverdrive": false,
+    "rotate": false,
+    "solid": true
+}

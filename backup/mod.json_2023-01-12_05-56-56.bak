@@ -1,0 +1,8 @@
+{
+    "name": "Logic-Super-Extend",
+    "displayName": "LgSE",
+    "author": "A4-Tacks",
+    "description": "Logical Virtual Machine Extension.\n可以在DOC.txt找到文档",
+    "version": "0.9",
+    "minGameVersion": 136
+}

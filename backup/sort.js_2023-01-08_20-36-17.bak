@@ -1,0 +1,158 @@
+const SortI = {
+    _(builder, target, start, stop, reverse, insertion_threshold) {
+        this.target = builder.var(target);
+        this.start = builder.var(start);
+        this.stop = builder.var(stop);
+        this.reverse = builder.var(reverse);
+        this.insertion_threshold = builder.var(insertion_threshold);
+    },
+
+    run(exec) {
+        from = exec.building(this.target);  // get mem
+        start = exec.numi(this.start); // get type is int num
+        stop = exec.numi(this.stop);
+        insertion_threshold = exec.numi(this.insertion_threshold);
+        is_reverse = exec.numi(this.reverse);
+        
+        // if is mem and team eq
+        if(from instanceof MemoryBsort.MemoryBuild && from.team == exec.team) {
+            mem = from.memory;
+            if (start >= stop)
+                return;
+
+            if (start < 0)
+                let start = 0;
+            if (stop > mem.length)
+                let stop = mem.length;  // 防止越界
+
+            // const swap = (a, b) => {
+                // temp = mem[a];
+                // mem[a] = mem[b];
+                // mem[b] = temp;
+            // }
+            // const oswap = (a, b, other) => {
+                // mem[a] = mem[b];
+                // mem[b] = other;
+            // }
+            // compare define
+            // const mid = (a, b) => a + ((b - a) >> 1);
+            // if (!is_reverse) {
+                // const gt = (a, b) => a > b;
+                // const lt = (a, b) => a < b;
+            // } else {
+                // // reversed
+                // const gt = (a, b) => a < b;
+                // const lt = (a, b) => a > b;
+            // }
+            
+            // const insertion_sort = (start, stop) => {
+                // for (let i=start + 1; i < stop; ++i){
+                    // let num = mem[i];
+                    // for (let j=i; j > start && gt(mem[j - 1], num); --j)
+                        // mem[j] = mem[j - 1];
+                    // mem[j] = num;
+                // }
+            // }
+            
+            // const quick_sort = (l, r) => {
+                // while (l < r){
+                    // if (r - l < insertion_threshold){
+                        // insertion_sort(l, r + 1);
+                        // return;
+                    // }
+                    // swap(mid(l, r), r);
+                    // pivot = mem[r];
+                    // j = l;
+                    // tag = true;
+                    // for (let i=l; i < r; ++i){
+                        // num = mem[i];
+                        // if (lt(num, pivot)||(num == pivot && (tag=!tag))){
+                            // oswap(i, j++, num);
+                        // }
+                    // }
+                    // swap(r, j);
+                    // quick_sort(l, j - 1);
+                    // l = j + 1
+                // }
+            // }
+            
+            // quick_sort(start, stop - 1);
+        }
+    }
+};
+
+const SortStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(SortStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.target = words[1] || "cell1";
+        this.start = words[2] || "0";
+        this.stop = words[3] || "64";
+        this.reverse = words[4] || "false";
+        this.insertion_threshold = words[5] || "10";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(SortI));
+        inst._(h, this.target, this.start,
+                this.stop, this.reverse, this.insertion_threshold);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep);
+            this.field(table, this[name], str => {this[name] = str});
+            this.row(table);
+        };
+        
+        add("sort(", "target");
+        add(", start=", "start");
+        add(", stop=", "stop");
+        add(", reverse=", "reverse");
+        add(", insertion_threshold=", "insertion_threshold");
+        this.row(table);
+        table.add(")");
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("sort ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.start);
+        b.append(" ");
+
+        b.append(this.stop);
+        b.append(" ");
+
+        b.append(this.reverse);
+        b.append(" ");
+
+        b.append(this.insertion_threshold);
+    },
+
+    name: () => "Sort",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("sort", SortStatement, [
+    "sort",
+    "",
+    "",
+    "",
+    "",
+    ""
+]);
+
+module.exports = SortStatement;

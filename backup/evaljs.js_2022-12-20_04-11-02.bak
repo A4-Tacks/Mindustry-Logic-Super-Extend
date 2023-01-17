@@ -1,0 +1,74 @@
+const EvaljsI = {
+	_(builder, output, text) {
+		this.output = builder.var(output);
+		this.text = builder.var(text);
+
+	},
+
+	run(exec) {
+		// f = new Function("arg", exec.obj(this.text)); // run error
+		result = eval(exec.obj(this.text));
+		switch(typeof(result)) {
+		    case "number":
+        	    exec.setnum(this.output, result);
+        	    break;
+		    default:
+        	    exec.setobj(this.output, result);
+        	    break;
+		}
+	}
+};
+
+const EvaljsStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(EvaljsStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.output = words[1] || "result";
+		this.text = words[2] || '""';
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(EvaljsI));
+		inst._(h, this.output, this.text);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = (sep, name) => {
+			table.add(sep);
+			this.field(table, this[name], str => {this[name] = str});
+		};
+		
+		add("", "output");
+		add(" = eval ", "text");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("evaljs ");
+
+		b.append(this.output);
+		b.append(" ");
+
+		b.append(this.text);
+	},
+
+	name: () => "EvalJs",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("evaljs", EvaljsStatement, [
+	"evaljs",
+	"",
+	""
+]);
+
+module.exports = EvaljsStatement;

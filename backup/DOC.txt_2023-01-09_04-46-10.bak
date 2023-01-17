@@ -1,0 +1,42 @@
+mod:
+    目前EvalJs, Lock 支持135, 140
+
+logic:
+    EvalJs:
+        function:
+            to(x): get id var value to obj
+            tn(x): get id var value to num
+            so(k, v): set id is k var value to v, type is obj
+            sn(k, v): set id is k var value to v, type is num
+            se(x): set error output var id
+            gv(x): get string-var id
+        
+        variable:
+            t: this
+            t.bud: build obj
+            t.err: error message output var id
+    Lock:
+        失败例如下标越界返回 -1
+        PID为假代表锁被释放
+        目标为内存某位
+        情况可以通过PID与目标的逻辑异或分为两种
+        当PID为假时，且目标为真时，释放锁，将目标设置为PID，返回0
+        当PID为真时，且目标为假时，获取锁，将目标设置为PID，返回0
+        当PID为真时，且目标为真时，不做任何操作，返回目标
+        当PID为假时，且目标为假时，不做任何操作，返回目标
+    Sort:
+        sort target start stop reverse insertion_sort_threshold
+        排序区间为 [start, stop)
+        如任意一方越界则不操作
+        使用算法为 Quick Sort + Insertion Sort，快速排序与插入排序
+        快速排序为我优化的版本，加入了：
+            取区间正中做基准数、尾递归优化、
+            相同元素交替分布于基准值两侧、
+            小于阈值使用简单插入排序
+            几个优化方案。
+    Swap:
+        交换内存 from 中 下标 a & b 的值
+        如任意一方越界则不操作
+    Reverse:
+        反转内存 from 中 区间 [a, b] 的值
+        如任意一方越界或 a >= b 则不操作

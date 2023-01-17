@@ -1,0 +1,116 @@
+const SortI = {
+    _(builder, target, start, stop, reverse, insertion_threshold) {
+        this.target = builder.var(target); // typt: int
+        this.start = builder.var(start);
+        this.stop = builder.var(stop);
+        this.reverse = builder.var(reverse);
+        this.insertion_threshold = builder.var(insertion_threshold);
+    },
+
+    run(exec) {
+        from = exec.building(this.target);  // get mem
+        start = exec.numi(this.start); // get type is int num
+        stop = exec.numi(this.stop);
+        insertion_threshold = exec.numi(this.insertion_threshold);
+        is_reverse = exec.numi(this.reverse);
+        
+        // if is mem and team eq
+        if(from instanceof MemoryBsort.MemoryBuild && from.team == exec.team) {
+            mem = from.memory;
+            if (address < 0 || address >= mem.length){
+                return;
+            }
+
+            const swap = (a, b) => {
+                temp = mem[a];
+                mem[a] = mem[b]
+                mem[b] = temp;
+            }
+            
+            const insertion_sort = (start, stop) => {
+                for (let i=start + 1; i < stop; ++i){
+                    let num = mem[i];
+                    for (let j=i; j > start && mem[j - 1] > num; --j)
+                        mem[j] = mem[j - 1];
+                    mem[j] = num;
+                }
+            }
+        
+            if (!is_reverse) {
+                // quick sort
+            }
+        }
+    }
+};
+
+const SortStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(SortStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.target = words[1] || "cell1";
+        this.start = words[2] || "0";
+        this.stop = words[3] || "64";
+        this.reverse = words[4] || "false";
+        this.insertion_threshold = words[5] || "10";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(SortI));
+        inst._(h, this.target, this.start,
+                this.stop, this.reverse, this.insertion_threshold);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep);
+            this.field(table, this[name], str => {this[name] = str});
+            this.row(table);
+        };
+        
+        add("sort(", "target");
+        add(", start=", "start");
+        add(", stop=", "stop");
+        add(", reverse=", "reverse");
+        add(", insertion_threshold=", "insertion_threshold");
+        table.add(")");
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("sort ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.start);
+        b.append(" ");
+
+        b.append(this.stop);
+        b.append(" ");
+
+        b.append(this.reverse);
+    },
+
+    name: () => "Sort",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("sort", SortStatement, [
+    "sort",
+    "",
+    "",
+    "",
+    "",
+    ""
+]);
+
+module.exports = SortStatement;

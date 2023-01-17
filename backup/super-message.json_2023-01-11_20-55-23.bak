@@ -1,0 +1,6 @@
+{
+    "name": "super-message",
+    "type": "MessageBlock",
+    "maxNewlines": 10000,
+    "maxTextLength": 1048576
+}

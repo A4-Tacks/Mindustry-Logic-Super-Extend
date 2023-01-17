@@ -1,0 +1,9 @@
+{
+    "name": "super-message",
+    "category": "logic",
+    "type": "MessageBlock",
+    "size": 1,
+    "requirements": [],
+    "maxNewlines": 10000,
+    "maxTextLength": 1048576
+}

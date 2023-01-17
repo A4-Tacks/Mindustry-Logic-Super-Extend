@@ -1,0 +1,5 @@
+const TestI = {
+    func(x) {
+        return x + " Test.";
+    }
+}

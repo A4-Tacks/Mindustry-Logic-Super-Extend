@@ -1,0 +1,4 @@
+// js
+const LockI = {
+    _(builder, mode, output, target, position)
+}

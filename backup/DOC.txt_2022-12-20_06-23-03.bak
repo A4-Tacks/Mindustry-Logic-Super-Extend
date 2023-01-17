@@ -1,0 +1,16 @@
+logic:
+    EvalJs:
+        function:
+            to(x): get id var value to obj
+            tn(x): get id var value to num
+            so(k, v): set id is k var value to v, type is obj
+            sn(k, v): set id is k var value to v, type is num
+            se(x): set error output var id
+            gv(x): get string-var id
+            
+		const to = x => exec.obj(x); // get id value to obj
+		const tn = x => exec.num(x); // get id value to num
+		const so = (k, v) => {exec.setobj(k, v); return v}; // set id value to obj
+		const sn = (k, v) => {exec.setnum(k, v); return v}; // set id value to num
+		const se = x => this.err = x; // set error output var (default: output)
+		const gv = x => this.bud.var(x); // get var id

@@ -1,0 +1,236 @@
+const EvaljsI = {
+    _(builder, output, text, a, b, c, err) {
+        this.output = builder.var(output);
+        this.text = builder.var(text);
+        this.a = builder.var(a);
+        this.b = builder.var(b);
+        this.c = builder.var(c);
+        this.err = builder.var(err);
+        this.bud = builder;
+    },
+
+    run(exec) {
+        // f = new Function("arg", exec.obj(this.text)); // run error
+        var a = this.a;
+        var b = this.b;
+        var c = this.c;
+        var ot = this.output;
+        var t = this;
+        var result, e, errinfo;
+
+        // functions
+        const to = x => exec.obj(x); // get id value to obj
+        const tn = x => exec.num(x); // get id value to num
+        const tb = x => {
+            let from = exec.building(x);
+            if (from === null || from.team != exec.team)
+                return null;
+            return from;
+        }; // get id value to builder
+
+        const so = (k, v) => {exec.setobj(k, v); return v}; // set id value to obj
+        const sn = (k, v) => {exec.setnum(k, v); return v}; // set id value to num
+        const se = x => this.err = x; // set error output var (default: output)
+
+        const gv = x => this.bud.var(x); // get var id
+
+        const df = (text) => ((x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => 
+            eval(text)); // get func
+        
+        const echo = (target, text) => {
+            let v = to(target);
+            so(target, (v === null || v === undefined)
+                    ? text + "\n" : v + "" + text + "\n")
+        };
+        
+        const strf = (format, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+            let num;
+            let len = 0;
+            let args = [x0, x1, x2, x3, x4, x5, x6, x7, x8, x9].map(
+            (x) => {
+                if (x === undefined) {return "";}
+                else {++len; return "" + x;}
+            });
+            return format.replace(/%[0-9%]/g, (x) => {
+                if (x == "%%") return "%";
+                else return ((num = parseInt(x[1])) < len)
+                    ? args[num] : x;
+            });
+        }
+
+        so(this.err, null);
+        so(this.output, null);
+
+        let script = "" + to(this.text);
+        
+        // 快捷函数定义宏展开
+        let target_script;
+        if (script[0] == "#") {
+            let lines = script.split("\n");
+            let line, temp, fname, args;
+            let func_body;
+            let in_func = false;
+            let i = 0;
+            let length = lines.length;
+            target_script = [];
+            for (; i < length; ++i) {
+                line = lines[i];
+                if (in_func) {
+                    if (line[0] == "#") {
+                        // 自动补 return
+                        temp = true;
+                        for (let i = func_body.length - 1; i >= 0; --i) {
+                            if (("" + func_body[i]).match(/return/)) {
+                                temp = false;
+                                break
+                            }
+                        }
+                        if (temp) {
+                            func_body.push("return");
+                        }
+                        func_body.push("}");
+                        target_script.push(func_body.join("\n"));
+                        in_func = false;
+                    } else {
+                        func_body.push(line);
+                        continue;
+                    }
+                }
+                if (line[0] == "#") {
+                    if (line.length == 1) {
+                        ++i;
+                        target_script.push(""); // empty line
+                        continue;
+                    } else if (temp = line.match(/^#([a-zA-Z_][a-zA-Z0-9_]*)/)) {
+                        in_func = true;
+                        fname = temp[1];
+                        args = line.slice(temp[0].length).trim().split(/ +/);
+                        for (let i in args) {
+                            if (!(args[i].match(/^[a-zA-Z_][a-zA-Z0-9_]*$/))) {
+                                so(this.err, "line: " + i + fname + " args: "
+                                        + args[i] + " 不是一个标准的标识符");
+                                return;
+                            }
+                        }
+                        func_body = ["function " + fname + "("
+                                + args.join(", ") + ") {"];
+                    }
+                } else {
+                    target_script.push(line);
+                }
+            }
+            if (in_func && i >= length && func_body.length > 0) {
+                so(this.err, fname + "(" + args + ") 未能结束");
+                return;
+            }
+            if (i < length) {
+                target_script.push(lines.slice(i).join("\n"));
+            }
+            script = (target_script.join("\n")
+                    .replace(/((^|\n)\s*)return\s*(.*)($|\n)/g,
+                    "$1{let ____= $3 $1return eval('____')}$4"));
+        }
+        
+        result = null;
+        try {
+            result = eval(script);
+        } catch (e) {
+            errinfo = strf("%0\n%1\n%2\n", e.name, e.message, e.stack);
+            so(this.err, errinfo);
+        }
+        if (result === null || result === undefined) {
+            // return null
+            echo(this.output, null);
+            return;
+        }
+        switch(result.constructor) {
+            case Number:
+                if (to(this.output) === null) {
+                    exec.setnum(this.output, result);
+                } else {
+                    echo(this.output, result);
+                }
+                break;
+            default:
+                echo(this.output, result);
+                break;
+        }
+    }
+};
+
+const EvaljsStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(EvaljsStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.output = words[1] || "result";
+        this.text = words[2] || '""';
+        this.a = words[3] || '0';
+        this.b = words[4] || '0';
+        this.c = words[5] || '0';
+        this.err = "err";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(EvaljsI));
+        inst._(h, this.output, this.text, this.a, this.b, this.c, this.err);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep).marginLeft(sep.length).left();
+            this.row(table);
+            this.field(table, this[name], str => {this[name] = str}).left();
+            this.row(table);
+        };
+        add("", "output");
+        add("eval", "text");
+        add("a=", "a");
+        add("b=", "b");
+        add("c=", "c");
+    },
+
+    write(b) {
+        b.append("evaljs ");
+
+        b.append(this.output);
+        b.append(" ");
+
+        b.append(this.text);
+        b.append(" ");
+
+        b.append(this.a);
+        b.append(" ");
+
+        b.append(this.b);
+        b.append(" ");
+
+        b.append(this.c);
+        b.append(" ");
+
+        b.append(this.err);
+    },
+
+    name: () => "EvalJs",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("evaljs", EvaljsStatement, [
+    "evaljs",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+]);
+
+module.exports = EvaljsStatement;

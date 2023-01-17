@@ -1,0 +1,104 @@
+const MoveI = {
+    _(builder, target, a, b, add) {
+        this.target = builder.var(target);
+        this.a = builder.var(a);
+        this.b = builder.var(b);
+        this.add = builder.var(add);
+    },
+
+    run(exec) {
+        from = exec.building(this.target);  // get mem
+
+        // if is mem and team eq
+        if (!(from === null) && from instanceof MemoryBlock.MemoryBuild
+                && from.team == exec.team) {
+            let mem = from.memory;
+            let len = mem.length;
+            let a = exec.numi(this.a);
+            let b = exec.numi(this.b);
+            let add = exec.numi(this.add);
+            const check = (i) => 0 <= i && i < len;
+            if (!(check(a) && check(b)))
+                return;
+            let temp;
+            const swap = (a, b) => {
+                temp = mem[a];
+                mem[a] = mem[b];
+                mem[b] = temp;
+            }
+            if (add == 0)
+                return;
+            
+            if (add > 0){
+                
+            } else {
+                
+            }
+        }
+    }
+};
+
+const MoveStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(MoveStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.target = words[1] || "cell1";
+        this.a = words[2] || "a";
+        this.b = words[3] || "b";
+        this.b = words[4] || "1";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(MoveI));
+        inst._(h, this.target, this.a, this.b);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep);
+            this.field(table, this[name], str => {this[name] = str});
+            this.row(table);
+        };
+        
+        add("from ", "target");
+        add(" move ", "a");
+        add(" [<-->] ", "b");
+        add(" step: ", "add");
+    },
+
+    write(b) {
+        b.append("move ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.a);
+        b.append(" ");
+
+        b.append(this.b);
+        b.append(" ");
+
+        b.append(this.add);
+    },
+
+    name: () => "Move",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("move", MoveStatement, [
+    "move",
+    "",
+    "",
+    ""
+]);
+
+module.exports = MoveStatement;

@@ -1,0 +1,6 @@
+const TestI = {
+    new: () => {},
+    func(x) {
+        return x + " Test.";
+    }
+}

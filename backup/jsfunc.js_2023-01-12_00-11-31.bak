@@ -1,0 +1,71 @@
+const JsFuncI = {
+    _(builder, name, text, err) {
+        this.name = builder.var(name);
+        this.text = builder.var(text);
+        this.err = builder.var(err);
+    },
+
+    run(exec) {
+    }
+};
+
+const JsFuncStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(JsFuncStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.name = words[1] || "result";
+        this.text = words[2] || '""';
+        this.err = "err";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(JsFuncI));
+        inst._(h, this.name, this.text, this.err);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep).marginLeft(sep.length).left();
+            this.row(table);
+            this.field(table, this[name], str => {this[name] = str}).left();
+            this.row(table);
+        };
+        add("function ", "name");
+        add("(...args) {return eval(", "text");
+        table.add("}").marginLeft(1).left();
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("jsfunc ");
+
+        b.append(this.name);
+        b.append(" ");
+
+        b.append(this.text);
+        b.append(" ");
+
+        b.append(this.err);
+    },
+
+    name: () => "JsFunc",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("jsfunc", JsFuncStatement, [
+    "jsfunc",
+    "",
+    "",
+    ""
+]);
+
+module.exports = JsFuncStatement;

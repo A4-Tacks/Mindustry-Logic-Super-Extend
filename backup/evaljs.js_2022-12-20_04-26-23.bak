@@ -1,0 +1,105 @@
+const EvaljsI = {
+	_(builder, output, text, a, b, c, d) {
+		this.output = builder.var(output);
+		this.text = builder.var(text);
+		this.a = builder.var(a);
+		this.b = builder.var(b);
+		this.c = builder.var(c);
+		this.d = builder.var(d);
+	},
+
+	run(exec) {
+		// f = new Function("arg", exec.obj(this.text)); // run error
+		var a = self.a;
+		var b = self.b;
+		var c = self.c;
+		var d = self.d;
+		result = eval(exec.obj(this.text));
+		switch(typeof(result)) {
+		    case "number":
+        	    exec.setnum(this.output, result);
+        	    break;
+		    default:
+        	    exec.setobj(this.output, result);
+        	    break;
+		}
+	}
+};
+
+const EvaljsStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(EvaljsStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.output = words[1] || "result";
+		this.text = words[2] || '""';
+		this.a = words[3] || '0';
+		this.b = words[4] || '0';
+		this.c = words[5] || '0';
+		this.d = words[6] || '0';
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(EvaljsI));
+		inst._(h, this.output, this.text, this.a, this.b, this.c, this.d);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = (sep, name) => {
+			table.add(sep);
+			this.field(table, this[name], str => {this[name] = str});
+		};
+		
+		add("", "output");
+		add(" = eval ", "text");
+		add("a=", "a");
+		add("b=", "b");
+		add("c=", "c");
+		add("d=", "d");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("evaljs ");
+
+		b.append(this.output);
+		b.append(" ");
+
+		b.append(this.text);
+		b.append(" ");
+
+		b.append(this.a);
+		b.append(" ");
+
+		b.append(this.b);
+		b.append(" ");
+
+		b.append(this.c);
+		b.append(" ");
+
+		b.append(this.d);
+	},
+
+	name: () => "EvalJs",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("evaljs", EvaljsStatement, [
+	"evaljs",
+	"",
+	"",
+	"",
+	"",
+	"",
+	""
+]);
+
+module.exports = EvaljsStatement;

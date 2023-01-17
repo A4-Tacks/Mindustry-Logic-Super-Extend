@@ -1,0 +1,80 @@
+const UpdateMsgI = {
+    _(builder, target, text, b) {
+        this.target = builder.var(target);
+        this.text = builder.var(text);
+        this.b = builder.var(b);
+    },
+
+    run(exec) {
+        from = exec.building(this.target);  // get mem
+
+        // if is mem and team eq
+        if (!(from === null) && from instanceof MemoryBlock.MemoryBuild
+                && from.team == exec.team) {
+            let mem = from.memory;
+            let len = mem.length;
+            let text = exec.numi(this.text);
+            let b = exec.numi(this.b);
+            const check = (i) => 0 <= i && i < len;
+            if (!(check(text) && check(b)))
+                return;
+            let temp = mem[text];
+            mem[text] = mem[b];
+            mem[b] = temp;
+        }
+    }
+};
+
+const UpdateMsgStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(UpdateMsgStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.target = words[1] || "message";
+        this.text = words[2] || "text";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(UpdateMsgI));
+        inst._(h, this.target, this.text, this.b);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep);
+            this.field(table, this[name], str => {this[name] = str});
+            this.row(table);
+        };
+        
+        add("", "target");
+        add(" = ", "text");
+    },
+
+    write(b) {
+        b.append("updatemsg ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.text);
+    },
+
+    name: () => "UpdateMsg",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("updatemsg", UpdateMsgStatement, [
+    "updatemsg",
+    "",
+    ""
+]);
+
+module.exports = UpdateMsgStatement;

@@ -1,0 +1,26 @@
+mod:
+    目前EvalJs, Lock 支持135, 140
+
+logic:
+    EvalJs:
+        function:
+            to(x): get id var value to obj
+            tn(x): get id var value to num
+            so(k, v): set id is k var value to v, type is obj
+            sn(k, v): set id is k var value to v, type is num
+            se(x): set error output var id
+            gv(x): get string-var id
+        
+        variable:
+            t: this
+            t.bud: build obj
+            t.err: error message output var id
+    Lock:
+        失败例如下标越界返回 -1
+        PID为假代表锁被释放
+        目标为内存某位
+        情况可以通过PID与目标的逻辑异或分为两种
+        当PID为假时，且目标为真时，释放锁，将目标设置为PID，返回0
+        当PID为真时，且目标为假时，获取锁，将目标设置为PID，返回0
+        当PID为真时，且目标为真时，不做任何操作，返回目标
+        当PID为假时，且目标为假时，不做任何操作，返回目标

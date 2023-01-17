@@ -1,0 +1,104 @@
+const InitLibI = {
+    _(builder) {
+    },
+
+    run(exec) {
+        String.prototype.format = function(...args) {
+            /*
+             * format: "%0:d + %1:d = %2:.2d".format(2, 3, 2 + 3) -> "2 + 3 = 05"
+             * return: String
+             */
+            var format = "" + this;
+            var length = format.length;
+            var argc = args.length;
+            var result = new Array();
+            var err = "";
+            var id = 0;
+            var str, temp, mode, start;
+            for (let i=0; i < length; ++i) {
+                str = format[i];
+                switch (str) {
+                    case "%":
+                        if (!(++i < length)) return err;  // skip %
+                        if (format[i] == "%") {
+                            result.push("%");  // %% -> %
+                            break;  // break switch
+                        }
+                        start = i;
+                        temp = new Array();
+                        while (/[0-9]/.test(format[i])) {
+                            temp.push(format[i]);
+                            if (!(++i < length))
+                                throw Error(start + ": 未结束的替换索引id");
+                        }
+                        if (format[i++] != ":")
+                            throw Error(i + ": 替换索引id未由':'结尾");
+                        id = parseInt(temp.join(""));
+                        if (!(id < argc))
+                            throw Error("id:" + id + " 越界, range: [0, " + argc + ")");
+                        temp = new Array();
+                        while (/[^a-zA-Z]/.test(format[i])) {
+                            temp.push(format[i]);
+                            if (!(++i < length)) throw Error(start + ": 未结束的替换体");
+                        }
+                        if (temp.length > 0)
+                            throw Error(start + ": 替换体还没做好");
+                        mode = format[i];
+                        switch (mode) {
+                            case "s":
+                                result.push(args[id]);
+                                break;
+                            case "d":
+                                result.push(args[id]);
+                                break;
+                            default:
+                                throw Error("mode: '" + mode.replace("'", "\\'") + "' not define");
+                                break;
+                        }
+                        break;
+                    default:
+                        result.push(str);
+                        break;
+                }
+            }
+            return result.join("");
+        }
+    }
+};
+
+const InitLibStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(InitLibStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(InitLibI));
+        inst._(h);
+        return inst;
+    },
+
+    buildt(table) {
+    },
+
+    write(b) {
+        b.append("initlib");
+    },
+
+    name: () => "InitLib",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("initlib", InitLibStatement, [
+    "initlib"
+]);
+
+module.exports = InitLibStatement;

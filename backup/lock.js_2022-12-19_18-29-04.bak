@@ -1,0 +1,32 @@
+const LockI = {
+    _(builder, mode, output, target, position) {
+        this.mode = mode;
+        this.output = builder.var(output);
+        this.target = builder.var(target);
+        this.position = builder.var(position);
+    },
+
+    run(vm) {
+        const value = vm[this.mode ? "obj" : "UnLock"](this.value);
+    }
+};
+
+const LockStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(LockStatement));
+        st.read(words);
+        return st;
+    },
+
+    name: () => "Lock",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("lock", LockStatement, [
+    "lock",
+    "mode",
+    "display1",
+    '"h"'
+]);
+
+module.exports = LockStatement;

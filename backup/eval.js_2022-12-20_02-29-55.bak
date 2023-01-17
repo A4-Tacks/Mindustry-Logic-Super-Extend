@@ -1,0 +1,72 @@
+const EvalI = {
+	_(builder, text, output) {
+		this.text = builder.var(text);
+		this.output = builder.var(output);
+
+	},
+
+	run(exec) {
+	    address = exec.numi(this.position);
+	    pid = exec.numi(this.pid); // get type is int num
+	    from = exec.building(this.target);
+	    exec.setnum(this.output, exec.textBuffer(this.target));
+	    
+	    // if is mem and team eq
+	    
+
+	}
+};
+
+const EvalStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(EvalStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.pid = words[1] || "return true";
+		this.output = words[2] || "result";
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(EvalI));
+		inst._(h, this.pid, this.output, this.target, this.position);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = (sep, name) => {
+			table.add(sep);
+			this.field(table, this[name], str => {this[name] = str});
+		};
+		
+		add("run ", "text");
+		add(" return ", "output");
+		this.row(table);
+	},
+
+	write(b) {
+		b.append("eval ");
+
+		b.append(this.pid);
+		b.append(" ");
+
+		b.append(this.output);
+	},
+
+	name: () => "Eval",
+	color: () => Pal.logicIo
+};
+
+global.anuke.register("eval", EvalStatement, [
+	"eval",
+	"",
+	""
+]);
+
+module.exports = EvalStatement;

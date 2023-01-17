@@ -1,0 +1,10 @@
+{
+	"name": "Logic-Super-Extend",
+	"displayName": "LgSE",
+	"author": "A4-Tacks",
+	"description": "Logical Virtual Machine Extension.",
+	"version": "0.1",
+	"minGameVersion": 135,
+	"java": true,
+	"main": "example.ExampleJavaMod"
+}

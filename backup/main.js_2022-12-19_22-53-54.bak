@@ -1,0 +1,39 @@
+// loader script
+const anuke = global.anuke = {
+	/* Mimic @RegisterStatement */
+	register(name, statement, def) {
+		LAssembler.customParsers.put(name, func(statement.new));
+
+		LogicIO.allStatements.add(prov(() => statement.new(def)));
+	}
+};
+
+const add = (type, names) => {
+	for (var i in names) {
+	    var path = type + "/" + name;
+		Log.info("Load " + path);
+		var name = names[i];
+		try {
+			anuke[name] = require(path);
+		    Log.info("Load " + path + "done.");
+		} catch (e) {
+			Log.err("Load" + path + "error.",
+				type, name, e, e.fileName,
+				new java.lang.Integer(e.lineNumber));
+			anuke[name] = null;
+		}
+	}
+};
+
+
+/* Instructions */
+add("inst", ["lock", "unbind", "string", "reflect", "proc", "drawx", "sound", "rotate"]);
+
+/* Blocks */
+add("blocks", []);
+
+/* Units */
+add("units", []);
+
+/* Misc */
+add("misc", []);

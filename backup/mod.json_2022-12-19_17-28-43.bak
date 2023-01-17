@@ -1,0 +1,9 @@
+{
+	"name": "anuke-logic",
+	"displayName": "[white]Anuke [purple]Logic",
+	"author": "DeltaNedas",
+	"description": "Adds random logic utilities. Praise the cat.",
+	"repo": "DeltaNedas/anuke-logic",
+	"version": "1.9.3",
+	"minGameVersion": 122
+}

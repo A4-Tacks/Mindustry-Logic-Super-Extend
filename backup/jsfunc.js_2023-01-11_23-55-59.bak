@@ -1,0 +1,111 @@
+const JsFuncI = {
+    _(builder, name, text, err) {
+        this.name = builder.var(name);
+        this.text = builder.var(text);
+        this.err = builder.var(err);
+    },
+
+    run(exec) {
+        // f = new Function("arg", exec.obj(this.text)); // run error
+        var e, errinfo;
+        
+        var name = "" + exec.obj(this.name);
+        var text = "" + exec.obj(this.text);
+        
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+            errinfo = "SyntaxError\n不合法的标识符: " + name + "\n";
+            exec.setobj(this.err, errinfo);
+            return;
+        }
+
+        const ment = (name, obj) => {
+            eval(name + " = obj");
+            return;
+        }
+
+        exec.setobj(this.err, null);
+        try {
+            result = eval(this.text);
+            ment(name, result);
+        } catch (e) {
+            errinfo = e.name + "\n" + e.message + "\n";
+            exec.setobj(this.err, errinfo);
+        }
+    }
+};
+
+const JsFuncStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(JsFuncStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.name = words[1] || "result";
+        this.text = words[2] || '""';
+        this.err = "err";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(JsFuncI));
+        inst._(h, this.name, this.text, this.a, this.b, this.c, this.err);
+        return inst;
+    },
+
+    buildt(table) {
+        var widsum = 0;
+        const add = (sep, name) => {
+            table.add(sep).marginLeft(sep.length).left();
+            this.row(table);
+            this.field(table, this[name], str => {this[name] = str}).left();
+            this.row(table);
+        };
+        add("", "name");
+        add("eval", "text");
+        add("a=", "a");
+        add("b=", "b");
+        add("c=", "c");
+        this.row(table);
+    },
+
+    write(b) {
+        b.append("jsfunc ");
+
+        b.append(this.name);
+        b.append(" ");
+
+        b.append(this.text);
+        b.append(" ");
+
+        b.append(this.a);
+        b.append(" ");
+
+        b.append(this.b);
+        b.append(" ");
+
+        b.append(this.c);
+        b.append(" ");
+
+        b.append(this.err);
+    },
+
+    name: () => "JsFunc",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("jsfunc", JsFuncStatement, [
+    "jsfunc",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+]);
+
+module.exports = JsFuncStatement;

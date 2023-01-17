@@ -1,0 +1,75 @@
+const LockI = {
+    _(builder, mode, output, target, position) {
+        this.mode = mode;
+        this.output = builder.var(output);
+        this.target = builder.var(target);
+        this.position = builder.var(position);
+    },
+
+    run(vm) {
+        const value = vm[this.mode ? "obj" : "UnLock"](this.value);
+    }
+};
+
+const LockStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(LockStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.mode = words[1] == "mode";
+        this.display = words[2] || "";
+        this.value = words[3] || "";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(LockI));
+        inst._(h, this.mode, this.display, this.value);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = name => {
+            table.add(name).left().marginLeft(10);
+            this.field(table, this[name], text => {this[name] = text}).width(150);
+        };
+
+        add("display");
+        var toggle;
+
+        toggle = table.button(this.mode ? "Lock" : "UnLock", Styles.logict, () => {
+            this.mode = !this.mode;
+            toggle.getLabel().text = this.mode ? "Lock" : "UnLock";
+        }).padLeft(10).padRight(10).width(60).left().color(table.color).get();
+        this.row(table);
+
+        add("value");
+    },
+
+    write(b) {
+        b.append("mode ");
+        b.append(this.mode ? "Lock " : "UnLock ");
+
+        b.append(this.display);
+        b.append(" ");
+        b.append(this.value);
+    },
+
+    name: () => "Lock",
+    color: () => Pal.logicBlocks
+};
+
+global.anuke.register("lock", LockStatement, [
+    "lock",
+    "mode",
+    "display1",
+    '"h"'
+]);
+
+module.exports = LockStatement;

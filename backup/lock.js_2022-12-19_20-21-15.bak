@@ -1,0 +1,9 @@
+// js
+const LockI = {
+    _(builder, mode, output, target, position){
+        this.mode = builder.var(mode);
+        this.output = builder.var(output);
+        this.target = builder.var(target);
+        this.position = builder.var(position);
+    }
+}

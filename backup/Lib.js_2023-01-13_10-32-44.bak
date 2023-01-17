@@ -1,0 +1,17 @@
+const doc = (str) => null;
+const Libs = {
+    message: {
+        updateMessage: function(from, text) {
+            /**
+             * 将目标信息板的内容替换为 text
+             */
+            // if is not message and team not eq
+            if ((from === null) || !(from instanceof MessageBlock.MessageBuild))
+                return;
+            from.message.setLength(0);
+            from.message.append("" + exec.obj(this.text));
+            return true;
+        }
+    }
+}
+

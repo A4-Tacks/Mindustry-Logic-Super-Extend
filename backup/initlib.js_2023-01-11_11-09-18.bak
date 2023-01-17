@@ -1,0 +1,45 @@
+const InitLibI = {
+    _(builder) {
+    },
+
+    run(exec) {
+    }
+};
+
+const InitLibStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(InitLibStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(InitLibI));
+        inst._(h);
+        return inst;
+    },
+
+    buildt(table) {
+        table.add("initlib")
+    },
+
+    write(b) {
+        b.append("initlib");
+    },
+
+    name: () => "InitLib",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("initlib", InitLibStatement, [
+    "initlib"
+]);
+
+module.exports = InitLibStatement;

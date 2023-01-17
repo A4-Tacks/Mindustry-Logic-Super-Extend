@@ -1,0 +1,71 @@
+const UpdateMsgI = {
+    _(builder, target, text) {
+        this.target = builder.var(target);
+        this.text = builder.var(text);
+    },
+
+    run(exec) {
+        let from = exec.building(this.target);  // get msg
+
+        // if is message and team eq
+        if (!(from === null) && from instanceof MessageBlock.MessageBuild
+                && from.team == exec.team) {
+            from.message.setLength(0);
+            from.message.append("" + exec.obj(this.text));
+        }
+    }
+};
+
+const UpdateMsgStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(UpdateMsgStatement));
+        st.read(words);
+        return st;
+    },
+
+    read(words) {
+        this.target = words[1] || "message";
+        this.text = words[2] || "text";
+    },
+
+    build(h) {
+        if (h instanceof Table) {
+            return this.buildt(h);
+        }
+
+        const inst = extend(LExecutor.LInstruction, Object.create(UpdateMsgI));
+        inst._(h, this.target, this.text);
+        return inst;
+    },
+
+    buildt(table) {
+        const add = (sep, name) => {
+            table.add(sep);
+            this.field(table, this[name], str => {this[name] = str});
+            this.row(table);
+        };
+        
+        add("", "target");
+        add(" = ", "text");
+    },
+
+    write(b) {
+        b.append("updatemsg ");
+
+        b.append(this.target);
+        b.append(" ");
+
+        b.append(this.text);
+    },
+
+    name: () => "UpdateMsg",
+    color: () => Pal.logicIo
+};
+
+global.anuke.register("updatemsg", UpdateMsgStatement, [
+    "updatemsg",
+    "",
+    ""
+]);
+
+module.exports = UpdateMsgStatement;

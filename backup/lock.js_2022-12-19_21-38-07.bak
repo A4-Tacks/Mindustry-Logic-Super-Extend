@@ -1,0 +1,51 @@
+// js
+const LockI = {
+    _(builder, pid, output, target, position){
+        this.pid = builder.var(pid);
+        this.output = builder.var(output);
+        this.target = builder.var(target);
+        this.position = builder.var(position);
+    },
+    
+    run(vm){
+        const pid = vm[this.pid ? "obj" : "num"](this.pid)
+    }
+}
+
+const LockStatement = {
+    new: words => {
+        const st = extend(LStatement, Object.create(LockStatement));
+        st.read(words);
+        return st;
+    },
+    
+    read(words){
+        this.cmd = words[0];
+        this.pid = words[1] || "true";
+        this.output = words[2] || "result";
+        this.target = words[3] || "cell1";
+        this.position = words[4] || "0";
+    },
+    
+    build(h){
+    },
+    
+    write(b){
+    },
+    
+    name: () => "Lock",
+    color: () => Pal.logicIo
+}
+
+// init
+global.anuke.register("lock", DrawxStatement, [
+    "lock",
+    "true",
+    "result",
+    "cell1",
+    "0"
+]);
+
+
+// export
+module.exports = LockStatement;

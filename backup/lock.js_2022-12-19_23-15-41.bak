@@ -1,0 +1,86 @@
+const LockI = {
+	_(builder, char, display, value) {
+		this.char = char;
+		this.display = builder.var(display);
+		this.value = builder.var(value);
+
+	},
+
+	run(vm) {
+		const display = vm.building(this.display);
+		// Basically an interface
+		if (!display || typeof(display.lock) != "function") return;
+		if (display.team != vm.team || !vm.linkIds.contains(display.id)) return;
+
+		const value = vm[this.char ? "obj" : "num"](this.value);
+		if (this.char) {
+			if (typeof(value) != "string") return;
+			value = value.substr(0, 1);
+		}
+
+		display.lock(this.char, value);
+	}
+};
+
+const LockStatement = {
+	new: words => {
+		const st = extend(LStatement, Object.create(LockStatement));
+		st.read(words);
+		return st;
+	},
+
+	read(words) {
+		this.char = words[1] == "char";
+		this.display = words[2] || "";
+		this.value = words[3] || "";
+	},
+
+	build(h) {
+		if (h instanceof Table) {
+			return this.buildt(h);
+		}
+
+		const inst = extend(LExecutor.LInstruction, Object.create(LockI));
+		inst._(h, this.char, this.display, this.value);
+		return inst;
+	},
+
+	buildt(table) {
+		const add = name => {
+			table.add(name).left().marginLeft(10);
+			this.field(table, this[name], text => {this[name] = text}).width(150);
+		};
+
+		add("display");
+		var toggle;
+
+		toggle = table.button(this.char ? "char" : "num", Styles.logict, () => {
+			this.char = !this.char;
+			toggle.getLabel().text = this.char ? "char" : "num";
+		}).padLeft(10).padRight(10).width(60).left().color(table.color).get();
+		this.row(table);
+
+		add("value");
+	},
+
+	write(b) {
+		b.append("lock ");
+		b.append(this.char ? "char " : "num ");
+
+		b.append(this.display);
+		b.append(" ");
+		b.append(this.value);
+	},
+
+	name: () => "Lock",
+	color: () => Pal.logicBlocks
+};
+
+global.anuke.register("lock", LockStatement, [
+	"lock",
+	"char",
+	"display1",
+	'"h"'
+]);
+
+module.exports = LockStatement;
